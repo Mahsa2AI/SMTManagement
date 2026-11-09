@@ -1,0 +1,23 @@
+@page
+@model SMTManagement.WebAPI.Pages.LoginModel
+@{
+    ViewData["Title"] = "Login";
+}
+<div class="card login-card">
+    <h1>Sign in</h1>
+    <p>Sign in with your SMT Management account.</p>
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+    {
+        <p class="error">@Model.ErrorMessage</p>
+    }
+    <form method="post">
+        <input type="hidden" name="returnUrl" value="@Request.Query["returnUrl"]" />
+        <label asp-for="Username">Username</label>
+        <input asp-for="Username" autocomplete="username" required />
+        <label asp-for="Password">Password</label>
+        <input asp-for="Password" type="password" autocomplete="current-password" required />
+        <div class="actions">
+            <button class="button" type="submit">Sign in</button>
+        </div>
+    </form>
+</div>

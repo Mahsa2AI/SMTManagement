@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="SMTManagement.Contracts/SMTManagement.Contracts.csproj" />
+  <Project Path="SMTManagement.Services/SMTManagement.Services.csproj" />
+  <Project Path="SMTManagement.SqliteAdapter/SMTManagement.SqliteAdapter.csproj" />
+  <Project Path="SMTManagement.Tests/SMTManagement.Tests.csproj" Id="bc7d3bb3-c2f5-4d63-8341-f18a337dcb78" />
+  <Project Path="SMTManagement.WebAPI/SMTManagement.WebAPI.csproj" />
+</Solution>

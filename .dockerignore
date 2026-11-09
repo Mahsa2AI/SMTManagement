@@ -1,0 +1,17 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.idea/
+**/*.user
+**/*.suo
+**/development.db
+**/development.db-shm
+**/development.db-wal
+**/production.db
+**/production.db-shm
+**/production.db-wal
+**/Logs/
+.git/
+.gitignore
+Dockerfile
+docker-compose*.yml

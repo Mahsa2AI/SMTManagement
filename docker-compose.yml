@@ -1,0 +1,19 @@
+services:
+  smtmanagement:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Container
+      ConnectionStrings__DefaultConnection: "Data Source=/app/data/smtmanagement.db;Foreign Keys=True"
+      ApiAuthentication__Token: "${SMT_API_TOKEN:-111}"
+      Authentication__InitialUser__Username: "${SMT_ADMIN_USERNAME:-admin}"
+      Authentication__InitialUser__Password: "${SMT_ADMIN_PASSWORD:-123}"
+    volumes:
+      - smtmanagement-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  smtmanagement-data:

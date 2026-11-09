@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SMT Management</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+    <script src="~/js/site.js" defer></script>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" asp-page="/Index">SMT Management</a>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <nav class="account-nav">
+                <a asp-page="/Account/ChangePassword">Change password</a>
+                <form method="post" asp-page="/Logout">
+                    <button class="button button-link" type="submit">Sign out</button>
+                </form>
+            </nav>
+        }
+    </header>
+    <main class="container">
+        @RenderBody()
+    </main>
+</body>
+</html>
