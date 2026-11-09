@@ -1,10 +1,6 @@
 name: Production CI/CD
 
 on:
-  pull_request:
-    branches:
-      - master
-      - main
   push:
     branches:
       - master
