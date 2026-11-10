@@ -8,6 +8,7 @@ using SMTManagement.Services;
 using SMTManagement.SqliteAdapter;
 using SMTManagement.SqliteAdapter.Repositories;
 using SMTManagement.WebAPI.Helpers;
+using SMTManagement.WebAPI.Health;
 using SMTManagement.WebAPI.Middleware;
 using SMTManagement.WebAPI.Services;
 
@@ -29,7 +30,9 @@ builder.Services.AddRazorPages(options =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient<ManagementApiClient>();
 builder.Services.AddScoped<IManagementPageDataService, ManagementPageDataService>();
-builder.Services.AddHealthChecks();
+builder.Services
+    .AddHealthChecks()
+    .AddCheck<DatabaseHealthCheck>("database");
 
 builder.Services
     .AddControllers()
