@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SMTManagement.Contracts.Interfaces.Services;
-using SMTManagement.Contracts.Interfaces.SqliteAdapter;
 using SMTManagement.Contracts.Models.DTOs;
-using SMTManagement.Services;
 
 namespace SMTManagement.WebAPI.Controllers;
 
@@ -14,14 +12,14 @@ public sealed class OrdersController : ControllerBase
 {
     private readonly IProductionService _production;
     private readonly ILogger<OrdersController> _logger;
-    private readonly IOrderRepository _repository;
+    private readonly IOrderService _service;
 
     public OrdersController(
-        IOrderRepository repository,
-        ProductionService production,
+        IOrderService service,
+        IProductionService production,
         ILogger<OrdersController> logger)
     {
-        _repository = repository;
+        _service = service;
         _production = production;
         _logger = logger;
     }
@@ -31,14 +29,14 @@ public sealed class OrdersController : ControllerBase
         [FromQuery] string? search,
         CancellationToken ct)
     {
-        return Ok(await _repository.GetAllAsync(search, ct));
+        return Ok(await _service.GetAllAsync(search, ct));
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(
         int id, CancellationToken ct)
     {
-        var result = await _repository.GetByIdAsync(id, ct);
+        var result = await _service.GetByIdAsync(id, ct);
 
         return result is null ? NotFound() : Ok(result);
     }
@@ -51,7 +49,7 @@ public sealed class OrdersController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.Name))
             return BadRequest("Name is required.");
 
-        var id = await _repository.CreateAsync(request, ct);
+        var id = await _service.CreateAsync(request, ct);
 
         _logger.LogInformation(
             "Order created. OrderId: {OrderId}, OrderName: {OrderName}",
@@ -70,7 +68,7 @@ public sealed class OrdersController : ControllerBase
     UpdateOrderRequest request,
     CancellationToken ct)
     {
-        var updated = await _repository.UpdateAsync(id, request, ct);
+        var updated = await _service.UpdateAsync(id, request, ct);
 
         if (!updated)
         {
@@ -94,7 +92,7 @@ public sealed class OrdersController : ControllerBase
         int id,
         CancellationToken ct)
     {
-        var deleted = await _repository.DeleteAsync(id, ct);
+        var deleted = await _service.DeleteAsync(id, ct);
 
         if (!deleted)
         {
@@ -124,7 +122,7 @@ public sealed class OrdersController : ControllerBase
 
         try
         {
-            var result = await _repository.SetBoardsAsync(
+            var result = await _service.SetBoardsAsync(
                 id, request.BoardIds, ct);
 
             return result

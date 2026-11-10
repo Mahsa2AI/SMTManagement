@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
-using SMTManagement.Contracts.Interfaces.SqliteAdapter;
+using SMTManagement.Contracts.Interfaces.Services;
 using SMTManagement.Contracts.Models;
 using SMTManagement.Contracts.Models.DTOs;
 using SMTManagement.WebAPI.Controllers;
@@ -11,17 +11,17 @@ namespace SMTManagement.Tests;
 
 public class BoardsControllerTests
 {
-    private readonly Mock<IBoardRepository> _repository;
+    private readonly Mock<IBoardService> _service;
     private readonly Mock<ILogger<BoardsController>> _loggerMock;
     private readonly BoardsController _controller;
 
     public BoardsControllerTests()
     {
-        _repository = new Mock<IBoardRepository>();
+        _service = new Mock<IBoardService>();
         _loggerMock = new Mock<ILogger<BoardsController>>();
 
         _controller = new BoardsController(
-            _repository.Object,
+            _service.Object,
             _loggerMock.Object);
     }
 
@@ -40,7 +40,7 @@ public class BoardsControllerTests
             }
         };
 
-        _repository
+        _service
             .Setup(x => x.GetAllAsync(
                 null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(boards);
@@ -66,7 +66,7 @@ public class BoardsControllerTests
             Width = 100
         };
 
-        _repository
+        _service
             .Setup(x => x.GetByIdAsync(
                 1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(board);
@@ -83,7 +83,7 @@ public class BoardsControllerTests
     [Fact]
     public async Task GetById_WhenMissing_ReturnsNotFound()
     {
-        _repository
+        _service
             .Setup(x => x.GetByIdAsync(
                 100, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Board?)null);
@@ -103,7 +103,7 @@ public class BoardsControllerTests
             200,
             100);
 
-        _repository
+        _service
             .Setup(x => x.CreateAsync(
                 request, It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
@@ -125,7 +125,7 @@ public class BoardsControllerTests
             250,
             120);
 
-        _repository
+        _service
             .Setup(x => x.UpdateAsync(
                 1, request, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
@@ -139,7 +139,7 @@ public class BoardsControllerTests
     [Fact]
     public async Task Delete_WhenExists_ReturnsNoContent()
     {
-        _repository
+        _service
             .Setup(x => x.DeleteAsync(
                 1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
@@ -155,7 +155,7 @@ public class BoardsControllerTests
     {
         var request = new UpdateBoardComponentsRequest([1, 2, 3]);
 
-        _repository
+        _service
             .Setup(x => x.SetComponentsAsync(
                 1,
                 request.ComponentIds,
@@ -173,7 +173,7 @@ public class BoardsControllerTests
     {
         var request = new UpdateBoardComponentsRequest([100]);
 
-        _repository
+        _service
             .Setup(x => x.SetComponentsAsync(
                 1,
                 request.ComponentIds,

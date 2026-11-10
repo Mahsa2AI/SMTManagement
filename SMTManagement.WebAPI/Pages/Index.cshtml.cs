@@ -8,10 +8,14 @@ namespace SMTManagement.WebAPI.Pages;
 public sealed class IndexModel : PageModel
 {
     private readonly ManagementApiClient _api;
+    private readonly IManagementPageDataService _pageData;
 
-    public IndexModel(ManagementApiClient api)
+    public IndexModel(
+        ManagementApiClient api,
+        IManagementPageDataService pageData)
     {
         _api = api;
+        _pageData = pageData;
     }
 
     public async Task OnGetAsync(CancellationToken ct)
@@ -102,11 +106,17 @@ public sealed class IndexModel : PageModel
 
     private async Task LoadAsync(CancellationToken ct)
     {
-        Orders = await _api.GetOrdersAsync(OrderSearch, ct) ?? [];
-        Boards = await _api.GetBoardsAsync(BoardSearch, ct) ?? [];
-        Components = await _api.GetComponentsAsync(ComponentSearch, ct) ?? [];
-        AvailableBoards = await _api.GetBoardsAsync(null, ct) ?? [];
-        AvailableComponents = await _api.GetComponentsAsync(null, ct) ?? [];
+        var data = await _pageData.LoadAsync(
+            OrderSearch,
+            BoardSearch,
+            ComponentSearch,
+            ct);
+
+        Orders = data.Orders;
+        Boards = data.Boards;
+        Components = data.Components;
+        AvailableBoards = data.AvailableBoards;
+        AvailableComponents = data.AvailableComponents;
     }
 
     public List<SMTManagement.Contracts.Models.Order> Orders { get; private set; } = [];

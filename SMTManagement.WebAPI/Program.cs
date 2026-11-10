@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.OpenApi;
 using Serilog;
+using SMTManagement.Contracts.Interfaces.Services;
 using SMTManagement.Contracts.Interfaces.SqliteAdapter;
 using SMTManagement.Services;
 using SMTManagement.SqliteAdapter;
@@ -27,6 +28,7 @@ builder.Services.AddRazorPages(options =>
 });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient<ManagementApiClient>();
+builder.Services.AddScoped<IManagementPageDataService, ManagementPageDataService>();
 
 builder.Services
     .AddControllers()
@@ -69,7 +71,10 @@ builder.Services.AddScoped<IBoardRepository, BoardRepository>();
 builder.Services.AddScoped<IComponentRepository, ComponentRepository>();
 
 // Services
-builder.Services.AddScoped<ProductionService, ProductionService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IBoardService, BoardService>();
+builder.Services.AddScoped<IComponentService, ComponentService>();
+builder.Services.AddScoped<IProductionService, ProductionService>();
 builder.Services.AddSingleton<UserAuthenticationService>();
 
 builder.Services

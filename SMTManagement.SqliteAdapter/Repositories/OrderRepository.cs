@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SMTManagement.Contracts.Interfaces.SqliteAdapter;
 using SMTManagement.Contracts.Models;
 using SMTManagement.Contracts.Models.DTOs;
+using SMTManagement.SqliteAdapter;
 
 namespace SMTManagement.SqliteAdapter.Repositories;
 
@@ -54,7 +55,7 @@ public class OrderRepository : IOrderRepository
             await using var reader = await command.ExecuteReaderAsync(ct);
 
             while (await reader.ReadAsync(ct))
-                result.Add(MapOrder(reader));
+                result.Add(SqliteEntityMapper.MapOrder(reader));
 
             foreach (var order in result)
             {
@@ -71,7 +72,7 @@ public class OrderRepository : IOrderRepository
                 await using (var boardReader = await boardCommand.ExecuteReaderAsync(ct))
                 {
                     while (await boardReader.ReadAsync(ct))
-                        order.Boards.Add(MapBoard(boardReader));
+                        order.Boards.Add(SqliteEntityMapper.MapBoard(boardReader));
                 }
 
                 foreach (var board in order.Boards)
@@ -88,7 +89,7 @@ public class OrderRepository : IOrderRepository
 
                     await using var componentReader = await componentCommand.ExecuteReaderAsync(ct);
                     while (await componentReader.ReadAsync(ct))
-                        board.Components.Add(MapComponent(componentReader));
+                        board.Components.Add(SqliteEntityMapper.MapComponent(componentReader));
                 }
             }
 
@@ -155,7 +156,7 @@ public class OrderRepository : IOrderRepository
             await using (var reader = await boardCommand.ExecuteReaderAsync(ct))
             {
                 while (await reader.ReadAsync(ct))
-                    boards.Add(MapBoard(reader));
+                    boards.Add(SqliteEntityMapper.MapBoard(reader));
             }
 
             foreach (var board in boards)
@@ -177,7 +178,7 @@ public class OrderRepository : IOrderRepository
                     await componentCommand.ExecuteReaderAsync(ct);
 
                 while (await reader.ReadAsync(ct))
-                    board.Components.Add(MapComponent(reader));
+                    board.Components.Add(SqliteEntityMapper.MapComponent(reader));
             }
 
             order.Boards = boards;
@@ -430,7 +431,7 @@ public class OrderRepository : IOrderRepository
 
         try
         {
-            if (!await ExistsAsync(
+            if (!await SqliteRepositoryHelper.ExistsAsync(
                 connection, transaction, "Orders", orderId, ct))
             {
                 _logger.LogWarning(
@@ -443,7 +444,7 @@ public class OrderRepository : IOrderRepository
 
             foreach (var boardId in ids)
             {
-                if (!await ExistsAsync(
+                if (!await SqliteRepositoryHelper.ExistsAsync(
                     connection, transaction, "Boards", boardId, ct))
                 {
                     _logger.LogWarning(
@@ -535,59 +536,7 @@ public class OrderRepository : IOrderRepository
         await using var reader = await command.ExecuteReaderAsync(ct);
 
         return await reader.ReadAsync(ct)
-            ? MapOrder(reader)
+            ? SqliteEntityMapper.MapOrder(reader)
             : null;
-    }
-
-    internal static Order MapOrder(SqliteDataReader reader) => new()
-    {
-        Id = reader.GetInt32(0),
-        Name = reader.GetString(1),
-        Description = reader.IsDBNull(2) ? null : reader.GetString(2),
-        OrderDate = DateTime.Parse(reader.GetString(3)),
-        CreatedAt = DateTime.Parse(reader.GetString(4))
-    };
-
-    internal static Board MapBoard(SqliteDataReader reader) => new()
-    {
-        Id = reader.GetInt32(0),
-        Name = reader.GetString(1),
-        Description = reader.IsDBNull(2) ? null : reader.GetString(2),
-        Length = reader.GetDouble(3),
-        Width = reader.GetDouble(4),
-        CreatedAt = DateTime.Parse(reader.GetString(5))
-    };
-
-    internal static Component MapComponent(SqliteDataReader reader) => new()
-    {
-        Id = reader.GetInt32(0),
-        Name = reader.GetString(1),
-        Description = reader.IsDBNull(2) ? null : reader.GetString(2),
-        Quantity = reader.GetInt32(3),
-        CreatedAt = DateTime.Parse(reader.GetString(4))
-    };
-
-    internal static async Task<bool> ExistsAsync(
-        SqliteConnection connection,
-        SqliteTransaction? transaction,
-        string table,
-        int id,
-        CancellationToken ct)
-    {
-        var allowedTables = new[] { "Orders", "Boards", "Components" };
-
-        if (!allowedTables.Contains(table))
-            throw new ArgumentException("Invalid table.");
-
-        await using var command = connection.CreateCommand();
-
-        command.Transaction = transaction;
-        command.CommandText =
-            $"SELECT EXISTS(SELECT 1 FROM {table} WHERE Id = @Id);";
-
-        command.Parameters.AddWithValue("@Id", id);
-
-        return Convert.ToInt32(
-            await command.ExecuteScalarAsync(ct)) == 1;
     }
 }

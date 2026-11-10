@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using SMTManagement.Contracts.Interfaces.Services;
 using SMTManagement.Contracts.Interfaces.SqliteAdapter;
 
-public class ProductionService : IProductionService
+public sealed class ProductionService : IProductionService
 {
     private readonly ILogger<IProductionService> _logger;
 

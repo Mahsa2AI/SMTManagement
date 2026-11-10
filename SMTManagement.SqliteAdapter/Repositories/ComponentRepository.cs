@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using SMTManagement.Contracts.Interfaces.SqliteAdapter;
 using SMTManagement.Contracts.Models.DTOs;
+using SMTManagement.SqliteAdapter;
 
 namespace SMTManagement.SqliteAdapter.Repositories;
 
@@ -53,7 +54,7 @@ public class ComponentRepository : IComponentRepository
             await using var reader = await command.ExecuteReaderAsync(ct);
 
             while (await reader.ReadAsync(ct))
-                result.Add(OrderRepository.MapComponent(reader));
+                    result.Add(SqliteEntityMapper.MapComponent(reader));
 
             _logger.LogDebug(
                 "Retrieved {ComponentCount} components.",
@@ -102,7 +103,7 @@ public class ComponentRepository : IComponentRepository
             await using var reader = await command.ExecuteReaderAsync(ct);
 
             var component = await reader.ReadAsync(ct)
-                ? OrderRepository.MapComponent(reader)
+                ? SqliteEntityMapper.MapComponent(reader)
                 : null;
 
             if (component is null)

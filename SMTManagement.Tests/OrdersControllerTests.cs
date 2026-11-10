@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
-using SMTManagement.Contracts.Interfaces.SqliteAdapter;
+using System.Text.Json;
+using SMTManagement.Contracts.Interfaces.Services;
 using SMTManagement.Contracts.Models;
 using SMTManagement.Contracts.Models.DTOs;
-using SMTManagement.Services;
 using SMTManagement.WebAPI.Controllers;
 using Xunit;
 
@@ -12,25 +12,20 @@ namespace SMTManagement.Tests;
 
 public class OrdersControllerTests
 {
-    private readonly Mock<IOrderRepository> _repository;
+    private readonly Mock<IOrderService> _service;
+    private readonly Mock<IProductionService> _production;
     private readonly Mock<ILogger<OrdersController>> _logger;
-    private readonly Mock<ILogger<ProductionService>> _serviceLogger;
-    private readonly ProductionService _production;
     private readonly OrdersController _controller;
 
     public OrdersControllerTests()
     {
-        _repository = new Mock<IOrderRepository>();
+        _service = new Mock<IOrderService>();
+        _production = new Mock<IProductionService>();
         _logger = new Mock<ILogger<OrdersController>>();
-        _serviceLogger = new Mock<ILogger<ProductionService>>();
-
-        _production = new ProductionService(
-            _repository.Object,
-            _serviceLogger.Object);
 
         _controller = new OrdersController(
-            _repository.Object,
-            _production,
+            _service.Object,
+            _production.Object,
             _logger.Object);
     }
 
@@ -48,7 +43,7 @@ public class OrdersControllerTests
             }
         };
 
-        _repository
+        _service
             .Setup(x => x.GetAllAsync(
                 null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(orders);
@@ -74,7 +69,7 @@ public class OrdersControllerTests
             OrderDate = DateTime.UtcNow
         };
 
-        _repository
+        _service
             .Setup(x => x.GetByIdAsync(
                 1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(order);
@@ -93,7 +88,7 @@ public class OrdersControllerTests
     public async Task GetById_WhenOrderDoesNotExist_ReturnsNotFound()
     {
         // Arrange
-        _repository
+        _service
             .Setup(x => x.GetByIdAsync(
                 100, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Order?)null);
@@ -115,7 +110,7 @@ public class OrdersControllerTests
             "Test order",
             DateTime.UtcNow);
 
-        _repository
+        _service
             .Setup(x => x.CreateAsync(
                 request, It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
@@ -139,7 +134,7 @@ public class OrdersControllerTests
             "Updated description",
             DateTime.UtcNow);
 
-        _repository
+        _service
             .Setup(x => x.UpdateAsync(
                 1, request, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
@@ -161,7 +156,7 @@ public class OrdersControllerTests
             null,
             DateTime.UtcNow);
 
-        _repository
+        _service
             .Setup(x => x.UpdateAsync(
                 100, request, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
@@ -178,7 +173,7 @@ public class OrdersControllerTests
     public async Task Delete_WhenOrderExists_ReturnsNoContent()
     {
         // Arrange
-        _repository
+        _service
             .Setup(x => x.DeleteAsync(
                 1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
@@ -197,7 +192,7 @@ public class OrdersControllerTests
         // Arrange
         var request = new UpdateOrderBoardsRequest([1, 2, 3]);
 
-        _repository
+        _service
             .Setup(x => x.SetBoardsAsync(
                 1,
                 request.BoardIds,
@@ -218,7 +213,7 @@ public class OrdersControllerTests
         // Arrange
         var request = new UpdateOrderBoardsRequest([100]);
 
-        _repository
+        _service
             .Setup(x => x.SetBoardsAsync(
                 1,
                 request.BoardIds,
@@ -247,10 +242,10 @@ public class OrdersControllerTests
             OrderDate = DateTime.UtcNow
         };
 
-        _repository
-            .Setup(x => x.GetByIdAsync(
+        _production
+            .Setup(x => x.ExportOrderAsync(
                 1, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(order);
+            .ReturnsAsync(JsonSerializer.SerializeToUtf8Bytes(new { Order = order }));
 
         // Act
         var result = await _controller.Download(

@@ -2,7 +2,7 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 using Moq;
-using SMTManagement.Contracts.Interfaces.SqliteAdapter;
+using SMTManagement.Contracts.Interfaces.Services;
 using SMTManagement.Contracts.Models;
 using SMTManagement.Contracts.Models.DTOs;
 using SMTManagement.WebAPI.Controllers;
@@ -12,17 +12,17 @@ namespace SMTManagement.Tests;
 
 public class ComponentsControllerTests
 {
-    private readonly Mock<IComponentRepository> _repository;
+    private readonly Mock<IComponentService> _service;
     private readonly Mock<ILogger<ComponentsController>> _logger;
     private readonly ComponentsController _controller;
 
     public ComponentsControllerTests()
     {
-        _repository = new Mock<IComponentRepository>();
+        _service = new Mock<IComponentService>();
         _logger = new Mock<ILogger<ComponentsController>>();
 
         _controller = new ComponentsController(
-            _repository.Object,
+            _service.Object,
             _logger.Object);
     }
 
@@ -39,7 +39,7 @@ public class ComponentsControllerTests
             }
         };
 
-        _repository
+        _service
             .Setup(x => x.GetAllAsync(
                 null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(components);
@@ -62,7 +62,7 @@ public class ComponentsControllerTests
             Quantity = 10
         };
 
-        _repository
+        _service
             .Setup(x => x.GetByIdAsync(
                 1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(component);
@@ -78,7 +78,7 @@ public class ComponentsControllerTests
     [Fact]
     public async Task GetById_WhenMissing_ReturnsNotFound()
     {
-        _repository
+        _service
             .Setup(x => x.GetByIdAsync(
                 100, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Component?)null);
@@ -97,7 +97,7 @@ public class ComponentsControllerTests
             "10K resistor",
             10);
 
-        _repository
+        _service
             .Setup(x => x.CreateAsync(
                 request, It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
@@ -118,7 +118,7 @@ public class ComponentsControllerTests
             "Updated description",
             20);
 
-        _repository
+        _service
             .Setup(x => x.UpdateAsync(
                 1, request, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
@@ -132,7 +132,7 @@ public class ComponentsControllerTests
     [Fact]
     public async Task Delete_WhenExists_ReturnsNoContent()
     {
-        _repository
+        _service
             .Setup(x => x.DeleteAsync(
                 1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
@@ -150,7 +150,7 @@ public class ComponentsControllerTests
         var exception = new SqliteException(
             "FOREIGN KEY constraint failed", 19);
 
-        _repository
+        _service
             .Setup(x => x.DeleteAsync(
                 1, It.IsAny<CancellationToken>()))
             .ThrowsAsync(exception);

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SMTManagement.Contracts.Interfaces.SqliteAdapter;
 using SMTManagement.Contracts.Models;
 using SMTManagement.Contracts.Models.DTOs;
+using SMTManagement.SqliteAdapter;
 
 namespace SMTManagement.SqliteAdapter.Repositories;
 
@@ -51,7 +52,7 @@ public class BoardRepository : IBoardRepository
             await using var reader = await command.ExecuteReaderAsync(ct);
 
             while (await reader.ReadAsync(ct))
-                result.Add(OrderRepository.MapBoard(reader));
+                    result.Add(SqliteEntityMapper.MapBoard(reader));
 
             foreach (var board in result)
             {
@@ -67,7 +68,7 @@ public class BoardRepository : IBoardRepository
 
                 await using var componentReader = await componentCommand.ExecuteReaderAsync(ct);
                 while (await componentReader.ReadAsync(ct))
-                    board.Components.Add(OrderRepository.MapComponent(componentReader));
+                    board.Components.Add(SqliteEntityMapper.MapComponent(componentReader));
             }
 
             _logger.LogDebug(
@@ -121,7 +122,7 @@ public class BoardRepository : IBoardRepository
             await using (var reader = await command.ExecuteReaderAsync(ct))
             {
                 board = await reader.ReadAsync(ct)
-                    ? OrderRepository.MapBoard(reader)
+                    ? SqliteEntityMapper.MapBoard(reader)
                     : null;
             }
 
@@ -151,7 +152,7 @@ public class BoardRepository : IBoardRepository
 
             while (await componentsReader.ReadAsync(ct))
                 board.Components.Add(
-                    OrderRepository.MapComponent(componentsReader));
+                    SqliteEntityMapper.MapComponent(componentsReader));
 
             _logger.LogDebug(
                 "Retrieved board {BoardId} with {ComponentCount} components.",
@@ -388,7 +389,7 @@ public class BoardRepository : IBoardRepository
 
         try
         {
-            if (!await OrderRepository.ExistsAsync(
+            if (!await SqliteRepositoryHelper.ExistsAsync(
                 connection, transaction, "Boards", boardId, ct))
             {
                 _logger.LogWarning(
@@ -401,7 +402,7 @@ public class BoardRepository : IBoardRepository
 
             foreach (var componentId in ids)
             {
-                if (!await OrderRepository.ExistsAsync(
+                if (!await SqliteRepositoryHelper.ExistsAsync(
                     connection, transaction, "Components", componentId, ct))
                 {
                     _logger.LogWarning(

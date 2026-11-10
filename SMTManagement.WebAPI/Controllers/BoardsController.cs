@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
-using SMTManagement.Contracts.Interfaces.SqliteAdapter;
+using SMTManagement.Contracts.Interfaces.Services;
 using SMTManagement.Contracts.Models.DTOs;
 
 namespace SMTManagement.WebAPI.Controllers;
@@ -11,12 +11,12 @@ namespace SMTManagement.WebAPI.Controllers;
 [Route("api/boards")]
 public sealed class BoardsController : ControllerBase
 {
-    private readonly IBoardRepository _repository;
+    private readonly IBoardService _service;
     private readonly ILogger<BoardsController> _logger;
 
-    public BoardsController(IBoardRepository repository, ILogger<BoardsController> logger)
+    public BoardsController(IBoardService service, ILogger<BoardsController> logger)
     {
-        _repository = repository;
+        _service = service;
         _logger = logger;
     }
 
@@ -25,7 +25,7 @@ public sealed class BoardsController : ControllerBase
     {
         _logger.LogInformation("Retrieving boards. Search: {Search}", search);
 
-        var boards = await _repository.GetAllAsync(search, ct);
+        var boards = await _service.GetAllAsync(search, ct);
 
         _logger.LogInformation("Successfully retrieved boards.");
 
@@ -39,7 +39,7 @@ public sealed class BoardsController : ControllerBase
     {
         _logger.LogInformation("Retrieving board with ID {BoardId}.", id);
 
-        var board = await _repository.GetByIdAsync(id, ct);
+        var board = await _service.GetByIdAsync(id, ct);
 
         if (board is null)
         {
@@ -67,7 +67,7 @@ public sealed class BoardsController : ControllerBase
 
         _logger.LogInformation("Creating board with name {BoardName}.", request.Name);
 
-        var id = await _repository.CreateAsync(request, ct);
+        var id = await _service.CreateAsync(request, ct);
 
         _logger.LogInformation("Board created successfully with ID {BoardId}.", id);
 
@@ -85,7 +85,7 @@ public sealed class BoardsController : ControllerBase
     {
         _logger.LogInformation("Updating board with ID {BoardId}.", id);
 
-        var result = await _repository.UpdateAsync(id, request, ct);
+        var result = await _service.UpdateAsync(id, request, ct);
 
         if (!result)
         {
@@ -106,7 +106,7 @@ public sealed class BoardsController : ControllerBase
 
         try
         {
-            var result = await _repository.DeleteAsync(id, ct);
+            var result = await _service.DeleteAsync(id, ct);
 
             if (!result)
             {
@@ -151,7 +151,7 @@ public sealed class BoardsController : ControllerBase
 
         try
         {
-            var result = await _repository.SetComponentsAsync(id,request.ComponentIds, ct);
+            var result = await _service.SetComponentsAsync(id,request.ComponentIds, ct);
 
             if (!result)
             {

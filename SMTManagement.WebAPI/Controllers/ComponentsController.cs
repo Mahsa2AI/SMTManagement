@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
-using SMTManagement.Contracts.Interfaces.SqliteAdapter;
+using SMTManagement.Contracts.Interfaces.Services;
 using SMTManagement.Contracts.Models.DTOs;
 
 namespace SMTManagement.WebAPI.Controllers;
@@ -12,14 +12,14 @@ namespace SMTManagement.WebAPI.Controllers;
 [Route("api/components")]
 public sealed class ComponentsController : ControllerBase
 {
-    private readonly IComponentRepository _repository;
+    private readonly IComponentService _service;
     private readonly ILogger<ComponentsController> _logger;
 
     public ComponentsController(
-        IComponentRepository repository,
+        IComponentService service,
         ILogger<ComponentsController> logger)
     {
-        _repository = repository;
+        _service = service;
         _logger = logger;
     }
 
@@ -32,7 +32,7 @@ public sealed class ComponentsController : ControllerBase
             "Retrieving components. Search: {Search}",
             search);
 
-        var components = await _repository.GetAllAsync(search, ct);
+        var components = await _service.GetAllAsync(search, ct);
 
         _logger.LogInformation(
             "Successfully retrieved components.");
@@ -49,7 +49,7 @@ public sealed class ComponentsController : ControllerBase
             "Retrieving component with ID {ComponentId}.",
             id);
 
-        var component = await _repository.GetByIdAsync(id, ct);
+        var component = await _service.GetByIdAsync(id, ct);
 
         if (component is null)
         {
@@ -84,7 +84,7 @@ public sealed class ComponentsController : ControllerBase
             "Creating component with name {ComponentName}.",
             request.Name);
 
-        var id = await _repository.CreateAsync(request, ct);
+        var id = await _service.CreateAsync(request, ct);
 
         _logger.LogInformation(
             "Component created successfully with ID {ComponentId}.",
@@ -106,7 +106,7 @@ public sealed class ComponentsController : ControllerBase
             "Updating component with ID {ComponentId}.",
             id);
 
-        var result = await _repository.UpdateAsync(id, request, ct);
+        var result = await _service.UpdateAsync(id, request, ct);
 
         if (!result)
         {
@@ -135,7 +135,7 @@ public sealed class ComponentsController : ControllerBase
 
         try
         {
-            var result = await _repository.DeleteAsync(id, ct);
+            var result = await _service.DeleteAsync(id, ct);
 
             if (!result)
             {
