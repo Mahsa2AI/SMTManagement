@@ -29,6 +29,7 @@ builder.Services.AddRazorPages(options =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient<ManagementApiClient>();
 builder.Services.AddScoped<IManagementPageDataService, ManagementPageDataService>();
+builder.Services.AddHealthChecks();
 
 builder.Services
     .AddControllers()
@@ -128,6 +129,7 @@ try
 
     app.MapControllers();
     app.MapRazorPages();
+    app.MapHealthChecks("/health");
 
     await app.RunAsync();
 }
