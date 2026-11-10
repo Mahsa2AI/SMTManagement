@@ -76,7 +76,7 @@ The solution uses practical object-oriented design principles and established pa
 - **Adapter Pattern** — SQLite-specific implementation is isolated in `SMTManagement.SqliteAdapter`.
 - **Middleware/Pipeline Pattern** — global exception handling is implemented by `ExceptionHandlingMiddleware`.
 - **Facade Pattern** — `ManagementApiClient` provides a focused client abstraction for Razor Pages API communication.
-- **DRY** — shared SQLite mapping, repository helpers, page data loading, and delete-confirmation behavior are centralized.
+- **DRY** — shared SQLite mapping, repository helpers, and page data loading are centralized.
 
 ## Domain Model and Persistence
 
